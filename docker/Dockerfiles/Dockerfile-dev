@@ -14,9 +14,14 @@ RUN mkdir -p /rally/esrally
 COPY pyproject.toml /rally/
 COPY README.md /rally/
 COPY esrally/ /rally/esrally/
+COPY ext/elasticsearch-py/ /rally/elasticsearch-py
 
 RUN python3 -m venv /rally/venv
 ENV PATH="/rally/venv/bin:$PATH"
+
+
+WORKDIR /rally/elasticsearch-py
+RUN python3 -m pip install ./
 
 WORKDIR /rally
 # Wipe away any lingering caches, copied over from the local machine
@@ -73,4 +78,4 @@ LABEL org.label-schema.schema-version="1.0" \
 
 VOLUME ["/rally/.rally"]
 
-ENTRYPOINT ["/entrypoint.sh"]
+#ENTRYPOINT ["/entrypoint.sh"]

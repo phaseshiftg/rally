@@ -1,0 +1,141 @@
+[[connecting]]
+== Connecting
+
+This page contains the information you need to connect the Client with {es}.
+
+
+[discrete]
+[[authentication]]
+=== Authentication
+
+This section contains code snippets to show you how to connect to various {es} 
+providers.
+
+
+[discrete]
+[[auth-ec]]
+==== Elastic Cloud
+
+Cloud ID is an easy way to configure your client to work with your Elastic Cloud 
+deployment. Combine the `cloud_id` with either `http_auth` or `api_key` to 
+authenticate with your Elastic Cloud deployment.
+
+Using `cloud_id` enables TLS verification and HTTP compression by default and 
+sets the port to 443 unless otherwise overwritten via the port parameter or the 
+port value encoded within `cloud_id`. Using Cloud ID also disables sniffing.
+
+[source,py]
+----------------------------
+from elasticsearch import Elasticsearch
+
+es = Elasticsearch(
+    cloud_id=”cluster-1:dXMa5Fx...”
+)
+----------------------------
+
+
+[discrete]
+[[auth-http]]
+==== HTTP Authentication
+
+HTTP authentication uses the `http_auth` parameter by passing in a username and 
+password within a tuple:
+
+[source,py]
+----------------------------
+from elasticsearch import Elasticsearch
+
+es = Elasticsearch(
+    http_auth=(“username”, “password”)
+)
+----------------------------
+
+
+[discrete]
+[[auth-apikey]]
+==== ApiKey authentication
+
+You can configure the client to use {es}'s API Key for connecting to your 
+cluster.
+
+[source,py]
+----------------------------
+from elasticsearch import Elasticsearch
+
+es = Elasticsearch(
+    api_key=(“api_key_id”, “api_key_secret”)
+)
+----------------------------
+
+[discrete]
+[[connecting-faas]]
+=== Using the Client in a Function-as-a-Service Environment
+
+This section illustrates the best practices for leveraging the {es} client in a Function-as-a-Service (FaaS) environment.
+The most influential optimization is to initialize the client outside of the function, the global scope.
+This practice does not only improve performance but also enables background functionality as – for example –
+https://www.elastic.co/blog/elasticsearch-sniffing-best-practices-what-when-why-how[sniffing].
+The following examples provide a skeleton for the best practices.
+
+[discrete]
+[[connecting-faas-gcp]]
+==== GCP Cloud Functions
+
+[source,py]
+----------------------------
+from elasticsearch import Elasticsearch
+
+client = Elasticsearch(
+    ... # Client initialization
+)
+
+def main(request):
+    ... # Use the client
+
+----------------------------
+
+[discrete]
+[[connecting-faas-aws]]
+==== AWS Lambda
+
+[source,py]
+----------------------------
+from elasticsearch import Elasticsearch
+
+client = Elasticsearch(
+    ... # Client initialization
+)
+
+def main(event, context):
+    ... # Use the client
+
+----------------------------
+
+[discrete]
+[[connecting-faas-azure]]
+==== Azure Functions
+
+[source,py]
+----------------------------
+import azure.functions as func
+from elasticsearch import Elasticsearch
+
+client = Elasticsearch(
+    ... # Client initialization
+)
+
+def main(request: func.HttpRequest) -> func.HttpResponse:
+    ... # Use the client
+
+----------------------------
+
+IMPORTANT: The async client shouldn't be used within Function-as-a-Service as a new event
+           loop must be started for each invocation. Instead the synchronous `Elasticsearch`
+           client is recommended.
+
+Resources used to assess these recommendations:
+
+* https://cloud.google.com/functions/docs/bestpractices/tips#use_global_variables_to_reuse_objects_in_future_invocations[GCP Cloud Functions: Tips & Tricks]
+* https://docs.aws.amazon.com/lambda/latest/dg/best-practices.html[Best practices for working with AWS Lambda functions]
+* https://docs.microsoft.com/en-us/azure/azure-functions/functions-reference-python?tabs=azurecli-linux%2Capplication-level#global-variables[Azure Functions Python developer guide]
+* https://docs.aws.amazon.com/lambda/latest/operatorguide/global-scope.html[AWS Lambda: Comparing the effect of global scope]
